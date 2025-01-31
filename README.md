@@ -1,38 +1,36 @@
+# QR Code SCB Payment Integration
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
-First, run the development server:
+### SCB Developers Web
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Register at [SCB Developer Portal](https://developer.scb).
+   - Create a new application [here](https://developer.scb/#/management/apps).
+   - Authenticate using the Token Generator [here](https://developer.scb/#/tools/token-generator).
+     - Save the following variables to your `.env.local` file: `API_KEY`, `API_SECRET`, `ACCESS_TOKEN`.
+2. Get Customer Profile from the menu [Playground >> Customer Profile].
+   - Use the Pin code from this page.
+3. Install the SCB Easy simulator app on your mobile phone [Playground >> Simulator login with QR code >> SCB Easy simulator App].
+   - Follow the instructions provided.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Terminal
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install `react-qr-code`:
+   ```bash
+   npm install react-qr-code
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Next.js
 
-## Learn More
+#### API Integration
+The project integrates with the SCB API to create QR codes for payments. The main API call is implemented in the POST function in route.ts.
 
-To learn more about Next.js, take a look at the following resources:
+#### Environment Variables
+Make sure to set the following environment variables in your .env.local file:
+SCB_API_KEY: Your SCB API Key.
+SCB_API_SECRET: Your SCB API Secret.
+SCB_ACCESS_TOKEN: Your SCB API access token.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-"# git101" 
-"# qr-scb" 
+#### Coding
+Configure a textbox to get ref1, ref2, and amount, and add a button to create a QR code
