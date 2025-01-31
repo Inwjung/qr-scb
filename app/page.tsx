@@ -1,101 +1,123 @@
-import Image from "next/image";
+'use client'
+import { useState } from 'react';
+import QRCode from 'react-qr-code';
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+export default function Page() {
+   const [qrtext, setQrtext] = useState('');
+   const [error, setError] = useState('');
+   const [isLoading, setIsLoading] = useState(false);
+   const [amount, setAmount] = useState('100.00');
+   const [ref1, setRef1] = useState('111');
+   const [ref2, setRef2] = useState('222');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+   const createQRCode = async () => {
+       try {
+           setIsLoading(true);
+           setError('');
+           
+           const response = await fetch('/scb/api/', {
+               method: 'POST',
+               headers: {
+                   'Content-Type': 'application/json'
+               },
+               body: JSON.stringify({
+                   "qrType": "PP",
+                   "ppType": "BILLERID",
+                   "ppId": "024515439173976",
+                   "amount": amount,
+                   "ref1": ref1,
+                   "ref2": ref2,
+                   "ref3": "SCB"
+               })
+           });
+
+           if (!response.ok) {
+               throw new Error(`HTTP error! status: ${response.status}`);
+           }
+
+           const data = await response.json();
+           
+           if (!data.data?.data.qrRawData) {
+               throw new Error('QR data not found in response');
+           }
+
+           console.log('QR Data:', data.data.data.qrRawData);
+           setQrtext(data.data.data.qrRawData);
+
+       } catch (error) {
+           console.error('Error:', error);
+           setError(error instanceof Error ? error.message : 'Failed to create QR code');
+           setQrtext('');
+       } finally {
+           setIsLoading(false);
+       }
+   };
+
+   return (
+       <div className='min-h-full w-full flex flex-col items-center justify-center gap-4 p-4'>
+           <div className="w-full max-w-md space-y-4">
+               <div className="space-y-2">
+                   <label className="block text-sm font-medium">Amount</label>
+                   <input
+                       type="text"
+                       value={amount}
+                       onChange={(e) => setAmount(e.target.value)}
+                       className="w-full px-3 py-2 border rounded-md"
+                       placeholder="Enter amount"
+                   />
+               </div>
+
+               <div className="space-y-2">
+                   <label className="block text-sm font-medium">Reference 1</label>
+                   <input
+                       type="text"
+                       value={ref1}
+                       onChange={(e) => setRef1(e.target.value)}
+                       className="w-full px-3 py-2 border rounded-md"
+                       placeholder="Enter ref1"
+                   />
+               </div>
+
+               <div className="space-y-2">
+                   <label className="block text-sm font-medium">Reference 2</label>
+                   <input
+                       type="text"
+                       value={ref2}
+                       onChange={(e) => setRef2(e.target.value)}
+                       className="w-full px-3 py-2 border rounded-md"
+                       placeholder="Enter ref2"
+                   />
+               </div>
+
+               <button 
+                   onClick={createQRCode}
+                   disabled={isLoading}
+                   className="w-full px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300 hover:bg-blue-600"
+               >
+                   {isLoading ? 'Creating...' : 'Create QR Code'}
+               </button>
+           </div>
+
+           {error && (
+               <div className="text-red-500 text-center">
+                   {error}
+               </div>
+           )}
+
+           {qrtext && (
+               <div className="flex flex-col items-center gap-4">
+                   <div className="text-sm break-all max-w-md bg-gray-100 p-4 rounded">
+                       {qrtext}
+                   </div>
+                   <QRCode
+                       title="GeeksForGeeks"
+                       value={qrtext}
+                       bgColor="#FFFFFF"
+                       fgColor="#000000"
+                       size={256}
+                   />
+               </div>
+           )}
+       </div>
+   );
 }
